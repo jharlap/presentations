@@ -1,0 +1,22 @@
+{"port": 4545, "protocol": "http", "stubs": [
+  {"responses": [{
+      "is": {"statusCode": 500},
+      "_behaviors": {"wait": 30000}
+    }],
+    "predicates": [{"contains": {"path": "timeout"}}]},
+  {"responses": [{
+      "is": {
+        "body": "this is the world's most interesting story from ${PATH} at ${TIME}\n"
+      },
+      "_behaviors": {
+        "decorate": "function (request, response) { response.body = response.body.replace('${PATH}', request.path); response.body = response.body.replace('${TIME}', Date.now());}"
+      }}],
+    "predicates": [{"and": [{
+      "matches": {"path": "^/text/[0-9]+/[0-9a-z]+$"},
+      "equals": {"method": "GET"}
+    }]}]},
+  {"responses": [{
+      "is": {"statusCode": 404}
+    }]
+  }
+]}

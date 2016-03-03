@@ -1,0 +1,230 @@
+Dr Strangeresult
+or: How I Learned to Stop Worrying and Love Testing
+2 Mar 2016
+
+Jonathan Harlap
+Sr. Platform Dev, Wattpad
+https://www.wattpad.com/user/JonathanHarlap
+https://github.com/jharlap
+
+* Why?
+
+- Prevent regressions
+- Confidence in correctness
+- Prevent regressions
+- Document intended behaviour
+- Safe refactors (without regressions)
+- API design
+
+Did I mention _prevent_regressions_?
+
+* "Finished the code, now I'll write the tests"
+
+- Tests *are* code - often more code than the code under test!
+- Good tests help design good APIs
+- Writing tests first/concurrently leads to testable APIs
+- "code then test" leads to *brittlely* testing implementations rather than intentions
+
+* Test while coding
+
+- Think about the intention
+- Write pending tests to verify the intention
+- Run (red)
+- Make it work (green)
+- Make it right (refactor)
+
+Skipped the red? What if the test would *never* fail?
+
+.play testing/always_green.go /START OMIT/,/END OMIT/
+
+* Unit Tests
+
+Pros:
+- Fast!
+- Great for verifing an algorithm
+- Easy to safely change a implementation, preserving API
+
+Cons:
+- More brittle?
+- Big refactors suck
+
+* Test the Intention
+
+.image testing/exp2_n-1.png
+
+- f(0) = 2^-1 = int(sqrt(2)) = int(1.414...) = 1
+- f(1) = 2^0 = 1
+- f(2) = 2
+- f(3) = 4
+- f(4) = 8
+- ...
+
+* Simple tests
+
+.code testing/simple_red.go /START OMIT/,/END OMIT/
+
+Note, one or more test funcs per desired behaviour/feature - don't test distinct concepts in a single test func.
+
+* Red
+
+Implement enough to make it compile, but no more.
+
+.play testing/simple_red.go /START M0 OMIT/,/END M0 OMIT/
+
+* Green
+
+Make it pass.
+
+.play testing/simple_green.go /START OMIT/,/END OMIT/
+
+* Not so pedantic!
+
+.play testing/simple_green2.go /START OMIT/,/END OMIT/
+
+* Refactor
+
+Make it right.
+
+.play testing/simple_refactor.go /START OMIT/,/END OMIT/
+
+* Table Driven Tests
+
+* Red
+
+Anonymous structs + range!
+.code testing/table_red.go /START TC OMIT/,/END TC OMIT/
+.play testing/table_red.go /START OMIT/,/END OMIT/
+
+* Green
+
+.play testing/table_green.go /START OMIT/,/END OMIT/
+
+*Refactor*
+
+.play testing/table_refactor.go /START OMIT/,/END OMIT/
+
+* Function boundaries
+.image testing/step-functions-6.gif
+.caption From http://www.algebra-class.com/image-files/step-functions-6.gif
+
+- What to test? x=0? x=1? x=2,3,4,5? *NO*
+- x=0, 1, 20, 21, 40, 41, 80, 81, 10000
+
+* Granularity
+
+* Service vs Unit Tests (Fowler-style)
+
+.image testing/pyramid.png
+.caption Martin Fowler ([[http://martinfowler.com/bliki/TestPyramid.html][TestPyramid]])
+
+    If you get a failure in a high level test, not just do you have a bug in your functional code,
+    you also have a missing unit test. - Martin Fowler
+
+* Service Tests
+
+An integration test, without the integration?
+
+Test the biggest piece of the service possible, without requiring collaborators/dependencies
+
+- Few service tests can cover LOTS of code paths!
+- Test *behaviour* not implementation
+- Check code coverage, pay attention to code paths with zero coverage, add tests to increase coverage
+- Stub collaborators ([[http://www.mbtest.org][mountebank]], [[https://godoc.org/net/http/httptest][httptest]], [[https://godoc.org/github.com/golang/mock/gomock][gomock]])
+- Simulate user input (known/captured good, known/captured bad, crafted byzantine inputs, [[https://github.com/dvyukov/go-fuzz][go-fuzz]])
+
+.link https://medium.com/@dgryski/go-fuzz-github-com-arolek-ase-3c74d5a3150c Damien Gryski's Tutorial on go-fuzz
+
+* Service vs Unit Tests (My Suggestion)
+
+Unit test *algorithms*. Service tests _with_code_coverage_ *everything*!
+
+How? No one right answer. Some ideas:
+- Go tests against controller. Inject mock/stub service dependencies, and "go test" - only mock external services, not internal business logic!
+- Mountebank config to stub collaborators (AWS, PHP, etc), test suite is a client program using the normal service API
+
+* Text Cache example
+
+- groupcache ring using text.service.consul as origin server
+- peer list from environment
+
+Behaviours:
+- accept request GET /text/12345/revA/cacheVersionA
+- origin request GET /text/12345/revA
+- cache origin results unless cacheVersion changes
+- ring survives a node failing (although efficiency may degrade a bit)
+- ... and others
+
+Each service test func addresses at most one area of behaviour. Don't mix ring resiliance with cacheVersion in a single func.
+
+* Origin Mountebank Config
+
+.code testing/origin.json
+
+* Text Cache example
+
+.play testing/textcache/1/main.go /^func main/,/^}/
+
+* Text Cache example
+
+.code testing/textcache/1/main.go /^func handleGetText/,/^}/
+.code testing/textcache/1/main.go /^func textGetter/,/^}/
+
+* Text Cache example
+
+.code testing/textcache/1/main.go /^func fetch/,/^}/
+
+- [[http://localhost:9001/text/12345/revA/cacheA]]
+- [[http://localhost:9001/text/12345/revA/cacheB]]
+- [[http://localhost:9001/text/12345/timeout/cacheA]]
+- [[http://localhost:9001/text/12346/revB/cacheB]]
+
+* Problem
+
+If main.go contains http.ListenAndServe(), how do you test it?
+
+.code testing/textcache/2/textcache/textcache_test.go /^func TestFetchFromOrigin/,/^}/
+
+* Refactor to make it testable!
+
+Testing helped reveal a desirable API
+
+.code testing/textcache/2/main.go /^func main/,/^}/
+
+* Refactor (more)
+
+Different API, same implementation
+
+.code testing/textcache/2/textcache/textcache.go /^func .* ServeHTTP/,/^}/
+
+* Other Problems
+
+- Non-deterministic tests
+
+    func TestRand(t *testing.t) {
+        if rand.Intn(10) > 5 { t.Error("Oh noes!") }
+    }
+
+- Incomplete function domain coverage
+
+.code testing/incomplete_domain.go
+
+- Testing trivial code
+
+    func IsPositive(x int) bool { return x >= 0 }
+
+* Problems (more)
+
+- Holding a hammer, everything looks like a nail
+- Hacking until it works (a.k.a., being stuck in a rut or losing the forest for the trees)
+
+.image testing/programming.gif
+
+Step back and/or phone a friend!
+
+* Wins
+
+Design to enable testability! Test to improve design!
+
+Good coverage without brittleness makes big refactors easy and *safe*
+
+
