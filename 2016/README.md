@@ -1,5 +1,7 @@
 # Presentations
 
+If you want Go syntax highlighting, use https://github.com/JosephBuchma/Go-Present-code-highlighter
+
 ## Testing
 
 This presentation on testing, part philosophy, part Go-specific, will work best if run locally with both mountebank and a GOPATH containing github.com/golang/groupcache and golang.org/x/net/context
