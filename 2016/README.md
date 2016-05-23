@@ -8,7 +8,7 @@ This presentation on testing, part philosophy, part Go-specific, will work best 
 
 But if you don't care about playground working, you can also just browse to http://go-talks.appspot.com/github.com/jharlap/presentations/2016/testing.slide
 
-## Setup
+### Setup
 
 ```
 npm install -g mountebank
@@ -21,3 +21,8 @@ GOPATH=$PWD:$GOPATH present
 ```
 
 Then browse to http://localhost:3999/testing.slide
+
+## Distributed Correctness
+
+Uses cleaver, so `npm install -g cleaver` and `cleaver distributed_correctness.md`
+
