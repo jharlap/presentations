@@ -26,3 +26,7 @@ Then browse to http://localhost:3999/testing.slide
 
 Uses cleaver, so `npm install -g cleaver` and `cleaver distributed_correctness.md`
 
+## Choreography @ Wattpad
+
+`cleaver choreography.md`
+
