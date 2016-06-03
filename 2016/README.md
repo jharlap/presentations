@@ -1,6 +1,9 @@
 # Presentations
 
-If you want Go syntax highlighting, use https://github.com/JosephBuchma/Go-Present-code-highlighter
+* [Testing](#testing)
+* [Distributed Correctness](#distributed-correctness)
+* [Chorography at Wattpad](#choreography-at-wattpad)
+
 
 ## Testing
 
@@ -22,7 +25,17 @@ GOPATH=$PWD:$GOPATH present
 
 Then browse to http://localhost:3999/testing.slide
 
+If you want Go syntax highlighting, use https://github.com/JosephBuchma/Go-Present-code-highlighter
+
 ## Distributed Correctness
 
 Uses cleaver, so `npm install -g cleaver` and `cleaver distributed_correctness.md`
+
+[Slides](distributed_correctness.html)
+
+## Choreography at Wattpad
+
+`cleaver choreography.md`
+
+[Slides](choreography.html)
 
