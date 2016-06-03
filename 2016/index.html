@@ -1,0 +1,25 @@
+<h1 id="presentations">Presentations</h1>
+<ul>
+<li><a href="#testing">Testing</a></li>
+<li><a href="#distributed-correctness">Distributed Correctness</a></li>
+<li><a href="#choreography-at-wattpad">Chorography at Wattpad</a></li>
+</ul>
+<h2 id="testing">Testing</h2>
+<p>This presentation on testing, part philosophy, part Go-specific, will work best if run locally with both mountebank and a GOPATH containing github.com/golang/groupcache and golang.org/x/net/context</p>
+<p>But if you don&#39;t care about playground working, you can also just browse to <a href="http://go-talks.appspot.com/github.com/jharlap/presentations/2016/testing.slide">http://go-talks.appspot.com/github.com/jharlap/presentations/2016/testing.slide</a></p>
+<h3 id="setup">Setup</h3>
+<pre><code>npm install -g mountebank
+go get -u golang.org/x/tools/cmd/present
+go get -u github.com/golang/groupcache
+go get -u golang.org/x/net/context
+
+mb --configfile testing/origin.json --allowInjection &amp;
+GOPATH=$PWD:$GOPATH present
+</code></pre><p>Then browse to <a href="http://localhost:3999/testing.slide">http://localhost:3999/testing.slide</a></p>
+<p>If you want Go syntax highlighting, use <a href="https://github.com/JosephBuchma/Go-Present-code-highlighter">https://github.com/JosephBuchma/Go-Present-code-highlighter</a></p>
+<h2 id="distributed-correctness">Distributed Correctness</h2>
+<p>Uses cleaver, so <code>npm install -g cleaver</code> and <code>cleaver distributed_correctness.md</code></p>
+<p><a href="distributed_correctness.html">Slides</a></p>
+<h2 id="choreography-at-wattpad">Choreography at Wattpad</h2>
+<p><code>cleaver choreography.md</code></p>
+<p><a href="choreography.html">Slides</a></p>
