@@ -1,0 +1,133 @@
+Growing By Heaps and Bounds
+Something
+24 Jun 2016
+
+Jonathan Harlap
+Principal Engineer, Wattpad
+https://www.wattpad.com/user/JonathanHarlap
+https://github.com/jharlap
+@jharlap
+
+* A Process
+
+Pop quiz: What is the memory layout of a process?
+
+* Heaps and Stacks
+
+.image http://2.bp.blogspot.com/-ohkIShIRrps/UMloODjJNhI/AAAAAAAACWc/d55WEizat_Y/s1600/memory.png
+
+: C is explicit: _malloc_ increases the heap, variable declaration without _malloc_ increases the stack.
+: Go is garbage collected. What does that mean?
+
+* Allocations
+
+Go is garbage collected.
+
+- How does it know whether to use the heap? Escape analysis
+- How does it free the heap? GC mark and sweep
+
+* Predictions
+
+Quiz 2: How different are these? CPU? Memory?
+
+.code memory_management/concat.go /START OMIT/,/END OMIT/
+
+: sprintf is a big hammer, so probably expensive
+: int addition cheaper than string concatenation
+
+* Benchmarks
+
+    BenchmarkConcat0-4	 30000000	        45.5 ns/op	       0 B/op	       0 allocs/op
+    BenchmarkConcat1-4	 20000000	        69.6 ns/op	      16 B/op	       1 allocs/op
+    BenchmarkConcat2-4	  5000000	       358   ns/op	      48 B/op	       3 allocs/op
+    BenchmarkConcat3-4	500000000	         3.1 ns/op	       0 B/op	       0 allocs/op
+
+* Surprised?
+
+.code -numbers memory_management/concat_with_bench.go /START OMIT/,/END OMIT/ HLsprintf
+
+: sprintf so expensive, probably not a surprise
+
+* Escape Analysis?
+
+    $ go build -gcflags="-m" concat_with_bench.go
+    # command-line-arguments
+    7: can inline Concat0
+    13: can inline Concat1
+    24: can inline Concat3
+    34: inlining call to Concat0
+    35: inlining call to Concat1
+    37: inlining call to Concat3
+    7: Concat0 a does not escape
+    7: Concat0 b does not escape
+    8: Concat0 a + b does not escape
+    13: Concat1 a does not escape
+    13: Concat1 b does not escape
+    20: a escapes to heap
+    19: leaking param: a
+    20: b escapes to heap
+    19: leaking param: b
+    20: Concat2 ... argument does not escape
+    24: Concat3 a does not escape
+    24: Concat3 b does not escape
+    34: main a + b does not escape
+
+* Surprised?
+
+.code -numbers memory_management/concat_with_bench.go /START OMIT/,/END OMIT/ HLplusequal
+
+* What happened?
+
+Another 
+.play memory_management/cap0.go /START/,/END/
+.play memory_management/cap1.go /START/,/END/
+.play memory_management/cap2.go /START/,/END/
+.play memory_management/cap3.go /START/,/END/
+
+* Escape Analysis
+
+- Compile time, not runtime
+- Decides what stays on the stack and what goes on the heap
+- More heap -> more GC pressure
+- More GC pressure -> more CPU spent on GC, more frequent sweeps
+- GC includes critical section: stop the world
+
+Thus, stack will be MUCH faster than heap.
+
+* Mechanical Sympathy
+
+“You don’t have to be an engineer to be be a racing driver, but you do have to have Mechanical Sympathy.” – Jackie Stewart, racing driver
+
+Applies to programming: 
+- Which is faster: Random access to a spinning disk, or a network round trip?
+- How long to read 1MB from memory? Disk? Network?
+
+.link http://people.eecs.berkeley.edu/~rcs/research/interactive_latency.html
+
+1 Light-nanosecond is almost 30cm. Laptop CPU did ~5 full cycles while a photon from its screen travelled to your eye!
+
+: understanding how a car works makes you a better driver
+: 10 qps = >200 MILLION instructions per request, or 100Mbit of data transfer!
+
+* Make it Work, Right, Fast?
+
+When was Kent Beck right? How slow is OK for "Make it work?"
+
+Compilers are very good at optimizing simple code. Coders are very good at reading simple code.
+
+Happy coders + happy machines = happy users!
+
+* Goroutines
+
+2k stack per goroutine
+
+.image http://2.bp.blogspot.com/-ohkIShIRrps/UMloODjJNhI/AAAAAAAACWc/d55WEizat_Y/s1600/memory.png
+
+: didn't get to this earlier, so how do routines fit in?
+: go 1.6 uses 2k per routine
+: simple code = efficient compiler = cheap routines
+: simple code is easier to optimize for performance
+: write simple code, when necessary profile and optimize only as much as necessary
+
+* Questions?
+

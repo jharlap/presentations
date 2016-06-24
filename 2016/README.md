@@ -3,7 +3,7 @@
 * [Testing](#testing)
 * [Distributed Correctness](#distributed-correctness)
 * [Chorography at Wattpad](#choreography-at-wattpad)
-
+* [Growing by Heaps and Bounds](#growing-by-heaps-and-bounds)
 
 ## Testing
 
@@ -38,4 +38,8 @@ Uses cleaver, so `npm install -g cleaver` and `cleaver distributed_correctness.m
 `cleaver choreography.md`
 
 [Slides](choreography.html)
+
+## Growing by Heaps and Bounds
+
+http://go-talks.appspot.com/github.com/jharlap/presentations/2016/memory_management.slide
 
